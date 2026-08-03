@@ -26,8 +26,8 @@
 
             <!-- Business & Branch Name Indicator -->
             <div class="flex flex-col">
-                <span class="font-bold text-base text-slate-900 leading-tight">Phone Lab</span>
-                <span class="text-xs text-slate-600 font-medium">Main Store (London)</span>
+                <span class="font-bold text-base text-slate-900 leading-tight">{{ \App\Services\BranchContext::name() }}</span>
+                <span class="text-xs text-slate-600 font-medium">{{ \App\Services\BranchContext::address() }}</span>
             </div>
         </div>
 
@@ -53,34 +53,28 @@
                 <span>Support</span>
             </button>
 
-            <!-- User Profile Dropdown: Sleek Integrated Pill -->
-            <div class="relative" x-data="{ open: false }">
-                <button 
-                    @click="open = !open" 
-                    class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg bg-white/70 hover:bg-white border border-slate-300/80 transition-all duration-150 cursor-pointer shadow-2xs focus:outline-none"
+            @guest
+                <!-- Clean Login Button -->
+                <a 
+                    href="/login" 
+                    wire:navigate
+                    class="px-3.5 py-2 rounded-lg bg-white/70 hover:bg-white text-slate-700 hover:text-slate-900 font-semibold text-sm transition-all duration-150 flex items-center gap-2 cursor-pointer border border-slate-300/80 shadow-2xs"
                 >
-                    <div class="w-7 h-7 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-xs shadow-2xs">
-                        P
-                    </div>
-                    <span class="font-bold text-sm text-slate-800">Phone Lab</span>
-                    <svg class="w-4 h-4 text-slate-400 transform transition-transform duration-150" :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-                </button>
+                    <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
+                    <span>Login</span>
+                </a>
+            @endguest
 
-                <div 
-                    x-show="open" 
-                    x-cloak
-                    @click.away="open = false" 
-                    x-transition
-                    class="absolute right-0 mt-2 w-52 bg-white rounded-lg shadow-xl border border-slate-200 py-1.5 z-50 text-base"
+            @auth
+                <!-- Clean Logout Button -->
+                <a 
+                    href="/logout" 
+                    class="px-3.5 py-2 rounded-lg bg-white/70 hover:bg-white text-red-600 hover:text-red-700 font-semibold text-sm transition-all duration-150 flex items-center gap-2 cursor-pointer border border-slate-300/80 shadow-2xs"
                 >
-                    <a href="/" wire:navigate class="block px-4 py-2.5 text-slate-800 hover:bg-slate-50 font-bold">Main Dashboard</a>
-                    <div class="border-t border-slate-100 my-1"></div>
-                    <a href="#" class="block px-4 py-2.5 text-slate-700 hover:bg-slate-50">Profile Settings</a>
-                    <a href="#" class="block px-4 py-2.5 text-slate-700 hover:bg-slate-50">Branch Switcher</a>
-                    <div class="border-t border-slate-100 my-1"></div>
-                    <a href="#" class="block px-4 py-2.5 text-red-600 hover:bg-red-50">Log Out</a>
-                </div>
-            </div>
+                    <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                    <span>Logout</span>
+                </a>
+            @endauth
         </div>
     </header>
 

@@ -8,7 +8,18 @@ use App\Livewire\Products\ProductIndex;
 use App\Livewire\Products\ProductShow;
 use App\Livewire\Products\ProductFormView;
 
+use App\Livewire\Auth\Login;
+
+use Illuminate\Support\Facades\Auth;
+
 Route::get('/', HomeDashboard::class);
+Route::get('/login', Login::class)->name('login');
+Route::any('/logout', function () {
+    Auth::logout();
+    session()->invalidate();
+    session()->regenerateToken();
+    return redirect('/login');
+})->name('logout');
 Route::get('/register', CashRegister::class);
 Route::get('/repairs', RepairBooking::class);
 Route::get('/products', ProductIndex::class);

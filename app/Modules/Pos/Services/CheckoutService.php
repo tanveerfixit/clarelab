@@ -33,7 +33,7 @@ class CheckoutService
 
             $taxAmount = 0.00; // Tax calculation hook
             $grandTotal = max(0.00, $subtotal - $discount + $taxAmount);
-            $invoiceNumber = 'INV-' . strtoupper(Str::random(8));
+            $invoiceNumber = \App\Services\InvoiceNumberGenerator::generate();
 
             $invoiceId = DB::table('invoices')->insertGetId([
                 'business_id' => $businessId,
