@@ -35,6 +35,7 @@ Route::middleware([
     })->name('logout');
     Route::get('/register', CashRegister::class);
     Route::get('/repairs', RepairBooking::class);
+    Route::get('/repairs/{ticket}', \App\Livewire\Repairs\RepairShow::class)->name('repairs.show');
     Route::get('/products', ProductIndex::class);
     Route::get('/products/{product}', ProductShow::class);
     Route::get('/products/create', ProductFormView::class);

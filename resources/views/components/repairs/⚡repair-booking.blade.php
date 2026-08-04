@@ -333,13 +333,19 @@
                             <th class="py-3 px-4 text-center border-r border-slate-300">Status</th>
                             <th class="py-3 px-4 text-right border-r border-slate-300">Quote</th>
                             <th class="py-3 px-4 text-right border-r border-slate-300">Deposit</th>
-                            <th class="py-3 px-4 text-right">Balance</th>
+                            <th class="py-3 px-4 text-right border-r border-slate-300">Balance</th>
+                            <th class="py-3 px-4 text-center">Action</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-200 text-slate-800">
                         @forelse($jobs as $job)
                             <tr class="hover:bg-slate-50 transition-colors">
-                                <td class="py-3 px-4 font-mono font-bold text-slate-900 border-r border-slate-200">{{ $job->ticket_number }}</td>
+                                <td class="py-3 px-4 font-mono font-bold text-slate-900 border-r border-slate-200">
+                                    <a href="/repairs/{{ $job->ticket_number }}" wire:navigate class="text-[#0a77c0] hover:underline flex items-center gap-1">
+                                        <span>{{ $job->ticket_number }}</span>
+                                        <svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                                    </a>
+                                </td>
                                 <td class="py-3 px-4 font-mono text-slate-600 text-xs border-r border-slate-200">{{ $job->created_at->format('d-m-Y H:i') }}</td>
                                 <td class="py-3 px-4 font-bold text-slate-900 border-r border-slate-200">{{ $job->customer_name }}</td>
                                 <td class="py-3 px-4 font-mono text-slate-600 text-xs border-r border-slate-200">{{ $job->phone_number }}</td>
@@ -358,8 +364,13 @@
                                 </td>
                                 <td class="py-3 px-4 text-right font-mono font-semibold border-r border-slate-200">€{{ number_format($job->total_quote, 2) }}</td>
                                 <td class="py-3 px-4 text-right font-mono text-slate-600 border-r border-slate-200">€{{ number_format($job->deposit_paid, 2) }}</td>
-                                <td class="py-3 px-4 text-right font-mono font-bold text-slate-900">
+                                <td class="py-3 px-4 text-right font-mono font-bold text-slate-900 border-r border-slate-200">
                                     €{{ number_format($job->remaining_balance, 2) }}
+                                </td>
+                                <td class="py-3 px-4 text-center">
+                                    <a href="/repairs/{{ $job->ticket_number }}" wire:navigate class="px-3 py-1 bg-[#0a77c0] hover:bg-[#08629f] text-white rounded-sm text-xs font-bold shadow-2xs inline-flex items-center gap-1 transition">
+                                        <span>View & Pay</span>
+                                    </a>
                                 </td>
                             </tr>
                         @empty

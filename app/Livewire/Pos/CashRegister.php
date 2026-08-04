@@ -122,7 +122,32 @@ class CashRegister extends Component
 
     public function mount()
     {
-        // Session active - activity logging starts from first item added
+        if (session()->has('pos_cart')) {
+            $this->cart = session('pos_cart');
+            $custName = session('pos_customer_name', '');
+            $custPhone = session('pos_customer_phone', '');
+            $deposit = session('pos_repair_deposit', 0.00);
+
+            if ($custName) {
+                $this->customerSearch = "{$custName}" . ($custPhone ? " ({$custPhone})" : "");
+            }
+
+            if ($deposit > 0) {
+                // Apply deposit credit item to cart
+                $this->cart[] = [
+                    'id' => 'deposit-credit-' . rand(1000, 9999),
+                    'name' => "Deposit Credit Already Paid",
+                    'price' => -abs($deposit),
+                    'quantity' => 1,
+                    'discount_amount' => 0.00,
+                    'description' => 'Deposit credit deducted from repair total',
+                ];
+            }
+
+            $this->logActivity('Repair Ticket Loaded', "Loaded repair items for " . ($custName ?: 'Customer'));
+            $this->syncSidebarPaymentInput();
+            session()->forget(['pos_cart', 'pos_customer_name', 'pos_customer_phone', 'pos_repair_deposit']);
+        }
     }
 
     public function toggleCart()
@@ -483,6 +508,13 @@ class CashRegister extends Component
             'Sale Completed',
             "Invoice #{$receiptData['invoice_number']} - {$detailsText} ({$printType})"
         );
+
+        if (session()->has('repair_checkout_ticket_id')) {
+            $ticketId = session('repair_checkout_ticket_id');
+            \App\Models\RepairTicket::where('id', $ticketId)->update(['status' => 'Completed']);
+            $this->logActivity('Repair Ticket Completed', "Ticket #{$ticketId} status auto-updated to Completed");
+            session()->forget('repair_checkout_ticket_id');
+        }
 
         $this->cart = [];
         $this->sidebarAppliedPayments = [];
