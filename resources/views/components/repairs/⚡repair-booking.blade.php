@@ -39,7 +39,7 @@
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
                 <span>Repair History</span>
                 <span class="ml-1 px-2 py-0.5 text-xs font-bold rounded-sm {{ $activeTab === 'old_jobs' ? 'bg-slate-700 text-white' : 'bg-slate-200 text-slate-800' }}">
-                    {{ count($oldJobs) }}
+                    {{ $totalJobsCount }}
                 </span>
             </button>
         </div>
@@ -312,7 +312,8 @@
                 <div class="flex gap-3 w-full md:w-auto">
                     <input 
                         type="text" 
-                        placeholder="Search by Job ID, Name or Phone..." 
+                        wire:model.live.debounce.150ms="searchQuery"
+                        placeholder="Search by Ticket #, Name, Phone, or Device..." 
                         class="px-3.5 py-2 bg-white border border-slate-300 rounded-sm text-sm text-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900 w-full md:w-80 font-sans"
                     />
                 </div>
@@ -323,12 +324,12 @@
                 <table class="w-full text-left border-collapse text-sm">
                     <thead class="bg-[#E2E8F0] border-b border-slate-300 text-slate-800 font-bold uppercase tracking-tight text-xs">
                         <tr>
-                            <th class="py-3 px-4 border-r border-slate-300">Job ID</th>
+                            <th class="py-3 px-4 border-r border-slate-300">Ticket #</th>
                             <th class="py-3 px-4 border-r border-slate-300">Date</th>
                             <th class="py-3 px-4 border-r border-slate-300">Customer Name</th>
                             <th class="py-3 px-4 border-r border-slate-300">Phone</th>
                             <th class="py-3 px-4 border-r border-slate-300">Device Model</th>
-                            <th class="py-3 px-4 border-r border-slate-300">Problem Summary</th>
+                            <th class="py-3 px-4 border-r border-slate-300">Problem Description</th>
                             <th class="py-3 px-4 text-center border-r border-slate-300">Status</th>
                             <th class="py-3 px-4 text-right border-r border-slate-300">Quote</th>
                             <th class="py-3 px-4 text-right border-r border-slate-300">Deposit</th>
@@ -336,33 +337,35 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-200 text-slate-800">
-                        @forelse($oldJobs as $job)
+                        @forelse($jobs as $job)
                             <tr class="hover:bg-slate-50 transition-colors">
-                                <td class="py-3 px-4 font-mono font-bold text-slate-900 border-r border-slate-200">{{ $job['job_id'] }}</td>
-                                <td class="py-3 px-4 font-mono text-slate-600 text-xs border-r border-slate-200">{{ $job['date'] }}</td>
-                                <td class="py-3 px-4 font-bold text-slate-900 border-r border-slate-200">{{ $job['customer_name'] }}</td>
-                                <td class="py-3 px-4 font-mono text-slate-600 text-xs border-r border-slate-200">{{ $job['phone'] }}</td>
-                                <td class="py-3 px-4 font-semibold text-blue-600 border-r border-slate-200">{{ $job['device'] }}</td>
-                                <td class="py-3 px-4 text-slate-600 max-w-xs truncate border-r border-slate-200" title="{{ $job['issue'] }}">{{ $job['issue'] }}</td>
+                                <td class="py-3 px-4 font-mono font-bold text-slate-900 border-r border-slate-200">{{ $job->ticket_number }}</td>
+                                <td class="py-3 px-4 font-mono text-slate-600 text-xs border-r border-slate-200">{{ $job->created_at->format('d-m-Y H:i') }}</td>
+                                <td class="py-3 px-4 font-bold text-slate-900 border-r border-slate-200">{{ $job->customer_name }}</td>
+                                <td class="py-3 px-4 font-mono text-slate-600 text-xs border-r border-slate-200">{{ $job->phone_number }}</td>
+                                <td class="py-3 px-4 font-semibold text-[#0a77c0] border-r border-slate-200">{{ $job->device_model }}</td>
+                                <td class="py-3 px-4 text-slate-600 max-w-xs truncate border-r border-slate-200" title="{{ $job->problem_description }}">{{ $job->problem_description }}</td>
                                 <td class="py-3 px-4 text-center border-r border-slate-200">
-                                    @if($job['status'] === 'Completed')
-                                        <span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-sm text-xs font-bold">Completed</span>
-                                    @elseif($job['status'] === 'In Progress')
-                                        <span class="px-2 py-0.5 bg-amber-100 text-amber-800 rounded-sm text-xs font-bold">In Progress</span>
+                                    @if($job->status === 'Completed')
+                                        <span class="px-2.5 py-0.5 bg-emerald-100 text-emerald-800 rounded-sm text-xs font-bold">Completed</span>
+                                    @elseif($job->status === 'In Progress')
+                                        <span class="px-2.5 py-0.5 bg-amber-100 text-amber-800 rounded-sm text-xs font-bold">In Progress</span>
+                                    @elseif($job->status === 'Received')
+                                        <span class="px-2.5 py-0.5 bg-blue-100 text-blue-800 rounded-sm text-xs font-bold">Received</span>
                                     @else
-                                        <span class="px-2 py-0.5 bg-blue-100 text-blue-800 rounded-sm text-xs font-bold">{{ $job['status'] }}</span>
+                                        <span class="px-2.5 py-0.5 bg-slate-100 text-slate-800 rounded-sm text-xs font-bold">{{ $job->status }}</span>
                                     @endif
                                 </td>
-                                <td class="py-3 px-4 text-right font-mono font-semibold border-r border-slate-200">€{{ number_format($job['total_quote'], 2) }}</td>
-                                <td class="py-3 px-4 text-right font-mono text-slate-600 border-r border-slate-200">€{{ number_format($job['deposit'], 2) }}</td>
+                                <td class="py-3 px-4 text-right font-mono font-semibold border-r border-slate-200">€{{ number_format($job->total_quote, 2) }}</td>
+                                <td class="py-3 px-4 text-right font-mono text-slate-600 border-r border-slate-200">€{{ number_format($job->deposit_paid, 2) }}</td>
                                 <td class="py-3 px-4 text-right font-mono font-bold text-slate-900">
-                                    €{{ number_format(max(0, $job['total_quote'] - $job['deposit']), 2) }}
+                                    €{{ number_format($job->remaining_balance, 2) }}
                                 </td>
                             </tr>
                         @empty
                             <tr>
                                 <td colspan="10" class="py-8 text-center text-slate-400 font-mono text-sm">
-                                    No past repair jobs found.
+                                    No repair jobs found.
                                 </td>
                             </tr>
                         @endforelse
