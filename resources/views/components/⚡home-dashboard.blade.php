@@ -25,7 +25,7 @@
 
         @foreach($tiles as $tile)
             <a 
-                href="#" 
+                href="{{ $tile['id'] === 'getting-started' ? '/getting-started' : '#' }}" 
                 wire:navigate 
                 class="w-[110px] h-[110px] flex flex-col items-center justify-center bg-[rgb(2,133,181)] text-white p-2 rounded-md shadow-md transition-all group border border-[rgb(2,133,181)] hover:-translate-y-0.5 hover:brightness-110 text-center shrink-0"
             >

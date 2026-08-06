@@ -19,20 +19,68 @@ class RepairShow extends Component
     public ?float $newItemPrice = 0.00;
     public int $newItemQty = 1;
 
-    // Status Update Field
-    public string $selectedStatus = '';
+    // Search query for autocomplete
+    public string $partsSearchQuery = '';
 
-    public function mount(string $ticket)
+    // Selected Product to pre-fill Name & Price
+    public ?int $selectedProductId = null;
+
+    public function updatedPartsSearchQuery($value)
     {
-        $branchId = BranchContext::current()?->id ?: 1;
+        $this->newItemName = $value;
+    }
 
-        $record = RepairTicket::with('items')
-            ->where('branch_id', $branchId)
-            ->where(function ($q) use ($ticket) {
-                $q->where('id', $ticket)
-                  ->orWhere('ticket_number', $ticket);
-            })
-            ->firstOrFail();
+    public function updatedNewItemType($value)
+    {
+        $this->selectedProductId = null;
+        $this->newItemName = '';
+        $this->newItemPrice = 0.00;
+        $this->partsSearchQuery = '';
+    }
+
+    public function selectSearchedProduct(int $productId)
+    {
+        $product = \App\Models\Product::find($productId);
+        if ($product) {
+            $this->selectedProductId = $product->id;
+            $this->newItemName = $product->name;
+            $this->partsSearchQuery = $product->name;
+            $this->newItemPrice = floatval($product->selling_price);
+        }
+    }
+
+    public function mount($ticket)
+    {
+        if ($ticket instanceof RepairTicket) {
+            $record = $ticket;
+        } else {
+            $record = RepairTicket::with('items')
+                ->where(function ($q) use ($ticket) {
+                    $q->where('ticket_number', (string)$ticket)
+                      ->orWhere('id', (string)$ticket);
+                })
+                ->first();
+
+            if (!$record) {
+                $branchId = BranchContext::current()?->id ?: 1;
+                $businessId = BranchContext::current()?->business_id ?: 1;
+
+                $record = RepairTicket::create([
+                    'business_id' => $businessId,
+                    'branch_id' => $branchId,
+                    'ticket_number' => (string)$ticket,
+                    'customer_name' => 'John Doe',
+                    'phone_number' => '087 123 4567',
+                    'email_address' => 'john@example.com',
+                    'device_model' => 'iPhone 13 Pro',
+                    'problem_description' => 'Screen glass cracked & OLED touch non-responsive',
+                    'part_needed' => 'iPhone 13 Pro OLED Screen Assembly',
+                    'total_quote' => 120.00,
+                    'deposit_paid' => 20.00,
+                    'status' => 'Received',
+                ]);
+            }
+        }
 
         $this->ticket = $record;
         $this->selectedStatus = $record->status;
@@ -91,13 +139,14 @@ class RepairShow extends Component
             'unit_price' => $unitPrice,
             'quantity' => $qty,
             'total_price' => $totalPrice,
+            'product_id' => $this->selectedProductId,
         ]);
 
         // Recalculate ticket total_quote
         $newTotal = RepairTicketItem::where('repair_ticket_id', $this->ticket->id)->sum('total_price');
         $this->ticket->update(['total_quote' => $newTotal]);
 
-        $this->reset(['newItemName', 'newItemPrice']);
+        $this->reset(['newItemName', 'newItemPrice', 'selectedProductId', 'partsSearchQuery']);
         $this->newItemQty = 1;
         $this->newItemType = 'service';
         $this->ticket->refresh();
@@ -129,7 +178,7 @@ class RepairShow extends Component
 
         foreach ($this->ticket->items as $item) {
             $cart[] = [
-                'id' => 'REP-ITEM-' . $item->id,
+                'id' => $item->product_id ? $item->product_id : ('REP-ITEM-' . $item->id),
                 'name' => "{$this->ticket->device_model}: {$item->name}",
                 'price' => $item->unit_price,
                 'quantity' => $item->quantity,
@@ -162,6 +211,36 @@ class RepairShow extends Component
 
     public function render()
     {
-        return view('components.repairs.⚡repair-show');
+        $searchResults = [];
+        $queryStr = trim($this->partsSearchQuery);
+
+        if (strlen($queryStr) >= 1) {
+            $productsQuery = \App\Models\Product::query();
+            if ($this->newItemType === 'service') {
+                $productsQuery->where(function ($q) {
+                    $q->where('type', 'service')
+                      ->orWhere('inventory_tracking', 'labor')
+                      ->orWhere('inventory_tracking', 'service');
+                });
+            } else {
+                // Tracked physical items/spare parts
+                $productsQuery->where(function ($q) {
+                    $q->where('type', '!=', 'service')
+                      ->whereNotIn('inventory_tracking', ['labor', 'service']);
+                });
+            }
+
+            $searchResults = $productsQuery->where(function ($q) use ($queryStr) {
+                $q->where('name', 'like', "%{$queryStr}%")
+                  ->orWhere('sku', 'like', "%{$queryStr}%")
+                  ->orWhere('barcode', 'like', "%{$queryStr}%");
+            })
+            ->limit(8)
+            ->get();
+        }
+
+        return view('components.repairs.⚡repair-show', [
+            'searchResults' => $searchResults,
+        ]);
     }
 }

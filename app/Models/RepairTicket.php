@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class RepairTicket extends Model
@@ -31,6 +32,11 @@ class RepairTicket extends Model
         'business_id' => 'integer',
         'branch_id' => 'integer',
     ];
+
+    public function getRouteKeyName(): string
+    {
+        return 'ticket_number';
+    }
 
     public function getRemainingBalanceAttribute(): float
     {

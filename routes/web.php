@@ -9,6 +9,7 @@ use App\Livewire\Products\ProductShow;
 use App\Livewire\Products\ProductFormView;
 
 use App\Livewire\Auth\Login;
+use App\Livewire\Settings\GettingStarted;
 
 use Illuminate\Support\Facades\Auth;
 
@@ -26,6 +27,7 @@ Route::get('/register', CashRegister::class);
 Route::get('/repairs', RepairBooking::class);
 Route::get('/repairs/{ticket}', RepairShow::class)->name('repairs.show');
 Route::get('/products', ProductIndex::class);
-Route::get('/products/{product}', ProductShow::class);
 Route::get('/products/create', ProductFormView::class);
+Route::get('/products/{product}', ProductShow::class);
 Route::get('/products/{product}/edit', ProductFormView::class);
+Route::get('/getting-started', GettingStarted::class);

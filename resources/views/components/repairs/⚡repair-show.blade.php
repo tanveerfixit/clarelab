@@ -178,65 +178,123 @@
                 </div>
 
                 <!-- Add New Repair Item Form Bar -->
-                <form wire:submit.prevent="addItem" class="p-4 bg-slate-50 border-t border-slate-300">
-                    <span class="text-xs font-bold text-slate-600 uppercase tracking-wider block mb-2">+ Add Labor Service or Spare Part</span>
-                    <div class="flex flex-col sm:flex-row gap-3 items-center">
-                        <select 
-                            id="new-item-type"
-                            name="new_item_type"
-                            wire:model="newItemType"
-                            class="px-3 py-2 bg-white border border-slate-300 rounded-sm text-sm text-slate-900 focus:outline-none focus:ring-1 focus:ring-[#0a77c0] w-full sm:w-36 font-semibold"
-                        >
-                            <option value="service">Labor Service</option>
-                            <option value="part">Spare Part</option>
-                        </select>
+                <form wire:submit.prevent="addItem" class="p-5 bg-slate-50 border-t border-slate-300 space-y-4">
+                    <span class="text-xs font-extrabold text-slate-700 uppercase tracking-wider block mb-1">+ Add Item or Service</span>
+                    
+                    <div class="space-y-4">
+                        <!-- ROW 1: Item Type (1/3 width) & Item Name / Search Catalog (2/3 width) -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                            <!-- Item Type (1/3) -->
+                            <div class="space-y-1.5 md:col-span-1">
+                                <label for="new-item-type" class="text-xs font-extrabold text-slate-600 uppercase tracking-wider block">Item Type</label>
+                                <select 
+                                    id="new-item-type"
+                                    name="new_item_type"
+                                    wire:model.live="newItemType"
+                                    class="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-sm text-sm text-slate-900 focus:outline-none focus:border-[#0a77c0] font-semibold cursor-pointer"
+                                >
+                                    <option value="service">Labor Service</option>
+                                    <option value="part">Spare Part</option>
+                                </select>
+                            </div>
 
-                        <input 
-                            id="new-item-name"
-                            name="new_item_name"
-                            type="text" 
-                            wire:model="newItemName"
-                            placeholder="Item name (e.g. OLED Display Assembly, Battery Labor)..."
-                            class="px-3.5 py-2 bg-white border border-slate-300 rounded-sm text-sm text-slate-900 focus:outline-none focus:ring-1 focus:ring-[#0a77c0] flex-1 w-full"
-                            required
-                        />
+                            <!-- Item Description & Search (2/3) -->
+                            <div class="space-y-1.5 md:col-span-2 relative" x-data="{ open: true }" @click.away="open = false">
+                                <label for="parts-search-query" class="text-xs font-extrabold text-slate-600 uppercase tracking-wider block">Item Name / Search Catalog</label>
+                                <input 
+                                    id="parts-search-query"
+                                    name="parts_search_query"
+                                    type="text" 
+                                    wire:model.live.debounce.150ms="partsSearchQuery"
+                                    placeholder="Type to search or enter custom description..."
+                                    class="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-sm text-sm text-slate-900 focus:outline-none focus:border-[#0a77c0] font-medium"
+                                    @focus="open = true"
+                                    required
+                                />
 
-                        <input 
-                            id="new-item-price"
-                            name="new_item_price"
-                            type="number" 
-                            step="0.01" 
-                            wire:model="newItemPrice"
-                            placeholder="Price (€)"
-                            class="px-3 py-2 bg-white border border-slate-300 rounded-sm text-sm text-slate-900 font-mono w-full sm:w-28 text-right focus:outline-none focus:ring-1 focus:ring-[#0a77c0]"
-                            required
-                        />
+                                @if(!empty($searchResults))
+                                    <div 
+                                        x-show="open" 
+                                        class="absolute z-50 left-0 right-0 top-[68px] bg-white border border-slate-300 rounded-sm shadow-xl max-h-56 overflow-y-auto divide-y divide-slate-100"
+                                        style="display: none;"
+                                    >
+                                        @foreach($searchResults as $prod)
+                                            <button 
+                                                type="button"
+                                                wire:click="selectSearchedProduct({{ $prod->id }})"
+                                                @click="open = false"
+                                                class="w-full px-4 py-2.5 text-left hover:bg-slate-100 transition text-xs font-semibold text-slate-900 flex justify-between items-center cursor-pointer"
+                                            >
+                                                <span class="truncate pr-2">{{ $prod->name }}</span>
+                                                <span class="text-[#0a77c0] font-mono font-bold shrink-0">€{{ number_format($prod->selling_price, 2) }}</span>
+                                            </button>
+                                        @endforeach
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
 
-                        <button 
-                            type="submit"
-                            class="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white font-bold text-sm rounded-sm transition shadow-2xs whitespace-nowrap cursor-pointer w-full sm:w-auto"
-                        >
-                            Add Item
-                        </button>
+                        <!-- ROW 2: Price (€) & QTY Side by Side, + Add Item button aligned right -->
+                        <div class="grid grid-cols-1 sm:grid-cols-12 gap-4 items-end pt-1">
+                            <!-- Price (€) -->
+                            <div class="space-y-1.5 sm:col-span-4 md:col-span-3">
+                                <label for="new-item-price" class="text-xs font-extrabold text-slate-600 uppercase tracking-wider block">Price (€)</label>
+                                <input 
+                                    id="new-item-price"
+                                    name="new_item_price"
+                                    type="number" 
+                                    step="0.01" 
+                                    wire:model="newItemPrice"
+                                    placeholder="0.00"
+                                    class="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-sm text-sm font-mono text-slate-900 text-right focus:outline-none focus:border-[#0a77c0]"
+                                    required
+                                />
+                            </div>
+
+                            <!-- Qty -->
+                            <div class="space-y-1.5 sm:col-span-3 md:col-span-2">
+                                <label for="new-item-qty" class="text-xs font-extrabold text-slate-600 uppercase tracking-wider block text-center">Qty</label>
+                                <input 
+                                    id="new-item-qty"
+                                    name="new_item_qty"
+                                    type="number" 
+                                    wire:model="newItemQty"
+                                    placeholder="1"
+                                    class="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-sm text-sm font-mono text-slate-900 text-center focus:outline-none focus:border-[#0a77c0]"
+                                    required
+                                />
+                            </div>
+
+                            <!-- Submit Button (Primary POS Blue bg-[#0a77c0] hover:bg-[#08629f]) -->
+                            <div class="sm:col-span-5 md:col-span-7 flex justify-end">
+                                <button 
+                                    type="submit"
+                                    class="w-full sm:w-auto px-6 py-2.5 bg-[#0a77c0] hover:bg-[#08629f] text-white font-bold text-sm rounded-sm transition shadow-2xs cursor-pointer flex items-center justify-center gap-2 uppercase tracking-wider whitespace-nowrap"
+                                >
+                                    <svg class="w-4 h-4 text-white shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                                    <span>Add Item</span>
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </form>
             </div>
 
         </div>
 
-        <!-- RIGHT COLUMN (1/3): Financial Summary & POS Register Checkout Button -->
+        <!-- RIGHT COLUMN (1/3): Financial Summary & Actions -->
         <div class="space-y-5">
             
             <!-- Financial Summary Card -->
             <div class="bg-white border border-slate-300 rounded-sm shadow-2xs p-5 space-y-4">
                 <div class="flex items-center justify-between border-b border-slate-200 pb-3">
-                    <span class="text-xs font-extrabold uppercase tracking-wider text-slate-500">Payment & Financial Summary</span>
+                    <span class="text-xs font-extrabold uppercase tracking-wider text-slate-500">Payment Summary</span>
                     <span class="font-mono text-xs text-slate-400 font-bold">#{{ $ticket->ticket_number }}</span>
                 </div>
 
                 <div class="space-y-2.5 text-sm">
                     <div class="flex justify-between items-center text-slate-600">
-                        <span>Total Quote Amount:</span>
+                        <span>Total Quote:</span>
                         <span class="font-mono font-bold text-slate-900">€{{ number_format($ticket->total_quote, 2) }}</span>
                     </div>
 
@@ -246,37 +304,35 @@
                     </div>
 
                     <div class="border-t border-slate-200 pt-3 flex justify-between items-center">
-                        <span class="font-bold text-slate-900 text-base">Remaining Balance Due:</span>
-                        <span class="font-mono text-2xl font-extrabold text-slate-900">
+                        <span class="font-bold text-slate-900 text-sm">Balance Due:</span>
+                        <span class="font-mono text-xl font-extrabold text-slate-900">
                             €{{ number_format($ticket->remaining_balance, 2) }}
                         </span>
                     </div>
                 </div>
-
-                <!-- Primary Action Button: Pay at Register -->
-                <div class="pt-2">
-                    <button 
-                        wire:click="checkoutAtRegister"
-                        class="w-full py-3 px-4 bg-[#0a77c0] hover:bg-[#08629f] text-white font-bold text-base rounded-sm shadow-sm hover:shadow transition flex items-center justify-center gap-2 cursor-pointer"
-                    >
-                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-                        <span>💳 Pay at Register</span>
-                    </button>
-                    <p class="text-[11px] text-slate-400 text-center mt-2 font-medium">
-                        Transfers repair items & customer info directly to Cash Register for payment.
-                    </p>
-                </div>
             </div>
 
-            <!-- Print Customer Receipt Button -->
-            <div class="bg-white border border-slate-300 rounded-sm shadow-2xs p-4 flex flex-col gap-2">
-                <button 
-                    onclick="window.print()" 
-                    class="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-sm rounded-sm transition border border-slate-300 flex items-center justify-center gap-2 cursor-pointer"
-                >
-                    <svg class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
-                    <span>Print Intake Ticket</span>
-                </button>
+            <!-- Action Buttons Card -->
+            <div class="bg-white border border-slate-300 rounded-sm shadow-2xs p-4 space-y-3">
+                <span class="text-xs font-extrabold uppercase tracking-wider text-slate-500 block">Actions</span>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <button 
+                        wire:click="checkoutAtRegister"
+                        class="w-full py-2 px-4 bg-[#0a77c0] hover:bg-[#08629f] text-white font-bold text-sm rounded-sm shadow-2xs transition inline-flex items-center justify-center gap-2 cursor-pointer"
+                    >
+                        <svg class="w-4 h-4 text-white shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                        <span>Pay at Register</span>
+                    </button>
+
+                    <button 
+                        onclick="window.print()" 
+                        class="w-full py-2 px-4 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-sm rounded-sm transition border border-slate-300 inline-flex items-center justify-center gap-2 cursor-pointer"
+                    >
+                        <svg class="w-4 h-4 text-slate-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                        <span>Print Ticket</span>
+                    </button>
+                </div>
             </div>
 
         </div>

@@ -12,11 +12,13 @@ use App\Livewire\Repairs\RepairBooking;
 use App\Livewire\Products\ProductIndex;
 use App\Livewire\Products\ProductShow;
 use App\Livewire\Products\ProductFormView;
+use App\Livewire\Settings\GettingStarted;
 
 /*
 |--------------------------------------------------------------------------
 | Tenant Routes
 |--------------------------------------------------------------------------
+|
 */
 
 Route::middleware([
@@ -37,7 +39,8 @@ Route::middleware([
     Route::get('/repairs', RepairBooking::class);
     Route::get('/repairs/{ticket}', \App\Livewire\Repairs\RepairShow::class)->name('repairs.show');
     Route::get('/products', ProductIndex::class);
-    Route::get('/products/{product}', ProductShow::class);
     Route::get('/products/create', ProductFormView::class);
+    Route::get('/products/{product}', ProductShow::class);
     Route::get('/products/{product}/edit', ProductFormView::class);
+    Route::get('/getting-started', GettingStarted::class);
 });
