@@ -358,12 +358,6 @@
                 <div class="bg-white border border-slate-200">
                     <div class="p-5 border-b border-slate-100 bg-slate-50">
                         <h2 class="text-base font-bold text-slate-900">Manage Label Printer</h2>
-                        <p class="text-xs text-slate-500 mt-1 leading-relaxed">
-                            Configure your label printer settings to print barcode labels, price tags, and product labels efficiently. Connect your printer and customize label formats to match your needs.
-                        </p>
-                        <div class="mt-3 p-3 bg-blue-50 border border-blue-100 text-[11px] text-blue-800 leading-relaxed">
-                            Our software uses your browser to print from so it does not require anything special. You should be able to print from any printer that your browser allows you to print to. We have found that many users like the Dymo Labelwriter 450 if you want a suggestion.
-                        </div>
                     </div>
 
                     <form wire:submit.prevent="saveLabelPrinter" class="p-5 space-y-5">
