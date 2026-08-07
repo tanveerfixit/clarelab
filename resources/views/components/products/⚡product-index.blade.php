@@ -147,12 +147,13 @@
                             <!-- 6. Need / Have / OnPO Status Column (Clickable to Detail Page) -->
                             <td class="py-1 px-2.5 text-center">
                                 @php
-                                    $hasNegativeStock = $product->stock_quantity < 0;
+                                    $branchStock = $product->currentBranchStock();
+                                    $hasNegativeStock = $branchStock < 0;
                                 @endphp
 
                                 <a href="/products/{{ $product->id }}" wire:navigate class="inline-flex items-center gap-1 px-1.5 py-0 rounded-xs {{ $hasNegativeStock ? 'bg-pink-100 text-blue-700 font-bold border border-pink-200' : 'text-blue-600' }}">
                                     <span class="hover:underline text-sm">
-                                        {{ $product->need_qty }}/{{ $product->stock_quantity }}/{{ $product->on_po_qty }}
+                                        {{ $product->need_qty }}/{{ $branchStock }}/{{ $product->on_po_qty }}
                                     </span>
                                     <svg class="w-3.5 h-3.5 text-blue-600 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 210.3H3v-3.572L16.732 3.732z"/></svg>
                                 </a>

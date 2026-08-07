@@ -143,52 +143,55 @@ class BranchSeeder extends Seeder
             Branch::updateOrCreate(['id' => $b['id']], $b);
         }
 
+        // Clean up old phonelab.com users to prevent database pollution
+        User::where('email', 'like', '%@phonelab.com')->delete();
+
         // Seed Admin & Branch User Accounts
         $users = [
             [
-                'email' => 'admin@phonelab.com',
+                'email' => 'admin@clarelab.com',
                 'name' => 'PhoneLab Admin',
                 'password' => Hash::make('Password123!'),
                 'business_id' => $business->id,
                 'branch_id' => 1,
             ],
             [
-                'email' => 'phonelab@phonelab.com',
+                'email' => 'phonelab@clarelab.com',
                 'name' => 'Phone Lab Branch Manager',
                 'password' => Hash::make('Password123!'),
                 'business_id' => $business->id,
                 'branch_id' => 1,
             ],
             [
-                'email' => 'ipear@phonelab.com',
+                'email' => 'ipear@clarelab.com',
                 'name' => 'iPear Branch Manager',
                 'password' => Hash::make('Password123!'),
                 'business_id' => $business->id,
                 'branch_id' => 2,
             ],
             [
-                'email' => 'ipeartesco@phonelab.com',
+                'email' => 'ipeartesco@clarelab.com',
                 'name' => 'iPear Tesco Kiosk Manager',
                 'password' => Hash::make('Password123!'),
                 'business_id' => $business->id,
                 'branch_id' => 3,
             ],
             [
-                'email' => 'fixd@phonelab.com',
+                'email' => 'fixd@clarelab.com',
                 'name' => 'FIXD Branch Manager',
                 'password' => Hash::make('Password123!'),
                 'business_id' => $business->id,
                 'branch_id' => 4,
             ],
             [
-                'email' => 'phoneshop@phonelab.com',
+                'email' => 'phoneshop@clarelab.com',
                 'name' => 'Phone Shop Branch Manager',
                 'password' => Hash::make('Password123!'),
                 'business_id' => $business->id,
                 'branch_id' => 5,
             ],
             [
-                'email' => 'gadgets@phonelab.com',
+                'email' => 'gadgets@clarelab.com',
                 'name' => 'Gadgets Branch Manager',
                 'password' => Hash::make('Password123!'),
                 'business_id' => $business->id,

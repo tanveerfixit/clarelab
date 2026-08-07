@@ -26,12 +26,13 @@ class CheckoutModal extends Component
     public float $changeDue = 0.00;
 
     public ?string $modalError = null;
+    public ?int $customerId = null;
 
     protected $listeners = [
         'openCheckoutModal' => 'open',
     ];
 
-    public function open(array $cart, float $grandTotal, float $subtotal, float $taxAmount, string $taxClass, string $paymentMethod = 'Debit Card', array $appliedPayments = [], float $changeDue = 0.00)
+    public function open(array $cart, float $grandTotal, float $subtotal, float $taxAmount, string $taxClass, string $paymentMethod = 'Debit Card', array $appliedPayments = [], float $changeDue = 0.00, ?int $customerId = null)
     {
         $this->cart = $cart;
         $this->grandTotalAmount = round($grandTotal, 2);
@@ -39,6 +40,7 @@ class CheckoutModal extends Component
         $this->taxAmountValue = round($taxAmount, 2);
         $this->taxClass = $taxClass;
         $this->changeDue = round($changeDue, 2);
+        $this->customerId = $customerId;
 
         // Sum up line discounts to pass down
         $this->discountAmount = array_reduce($this->cart, function($carry, $item) {
@@ -84,7 +86,9 @@ class CheckoutModal extends Component
                 branchId: 1,
                 cart: $this->cart,
                 discount: $this->discountAmount,
-                paymentMethod: $this->selectedMethod
+                paymentMethod: $this->selectedMethod,
+                customerId: $this->customerId,
+                userId: auth()->id()
             );
 
             // Inject payment detail metadata for the receipt

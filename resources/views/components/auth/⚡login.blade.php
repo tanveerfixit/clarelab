@@ -107,6 +107,27 @@
                 </label>
             </div>
 
+            <!-- Human Verification (Math CAPTCHA) -->
+            <div class="space-y-2">
+                <label for="verification_answer" class="block text-sm font-semibold text-slate-700">
+                    Human Verification: What is <span class="font-extrabold text-slate-900">{{ $num1 }} + {{ $num2 }}</span>? <span class="text-red-500">*</span>
+                </label>
+                <div class="relative">
+                    <input 
+                        id="verification_answer"
+                        name="verification_answer"
+                        type="number" 
+                        wire:model.defer="verification_answer"
+                        placeholder="Answer"
+                        class="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 focus:border-[#0070BA] focus:ring-[#0070BA]/20 rounded-xl text-sm text-slate-900 focus:bg-white focus:outline-none focus:ring-2 transition duration-150 placeholder:text-slate-400 font-medium font-mono"
+                        required
+                    />
+                    <svg class="w-5 h-5 absolute left-3.5 top-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                    </svg>
+                </div>
+            </div>
+
             <!-- Submit Button -->
             <div class="pt-2">
                 <button 

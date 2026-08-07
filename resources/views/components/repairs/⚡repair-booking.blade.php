@@ -21,29 +21,22 @@
         <button @click="show = false" class="text-slate-400 hover:text-white font-bold ml-2 text-xs">✕</button>
     </div>
 
-    <!-- Clean Top Navigation Tabs -->
-    <div class="w-full mb-4">
-        <div class="bg-white p-1 rounded-sm border border-slate-300 inline-flex gap-1 shadow-2xs">
-            <button 
-                wire:click="setTab('new_booking')"
-                class="px-5 py-2 text-sm font-bold rounded-sm transition cursor-pointer flex items-center gap-2 {{ $activeTab === 'new_booking' ? 'bg-slate-900 text-white shadow-2xs' : 'text-slate-700 hover:bg-slate-100' }}"
-            >
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                <span>New Repair Booking</span>
-            </button>
-
-            <button 
-                wire:click="setTab('old_jobs')"
-                class="px-5 py-2 text-sm font-bold rounded-sm transition cursor-pointer flex items-center gap-2 {{ $activeTab === 'old_jobs' ? 'bg-slate-900 text-white shadow-2xs' : 'text-slate-700 hover:bg-slate-100' }}"
-            >
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-                <span>Repair History</span>
-                <span class="ml-1 px-2 py-0.5 text-xs font-bold rounded-sm {{ $activeTab === 'old_jobs' ? 'bg-slate-700 text-white' : 'bg-slate-200 text-slate-800' }}">
-                    {{ $totalJobsCount }}
-                </span>
-            </button>
+    @if($activeTab === 'new_booking')
+        <!-- Page Header for Book New Repair -->
+        <div class="flex items-center justify-between pb-3.5 mb-4">
+            <div class="flex items-center gap-3">
+                <a 
+                    href="/repairs" 
+                    wire:navigate
+                    class="px-3.5 py-2 bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 font-semibold text-sm rounded-xs transition shadow-2xs flex items-center gap-1.5 cursor-pointer"
+                >
+                    <span>←</span>
+                    <span>Back to Repair Management</span>
+                </a>
+                <h1 class="text-2xl font-bold text-slate-800 tracking-tight">Book New Repair</h1>
+            </div>
         </div>
-    </div>
+    @endif
 
     @if($activeTab === 'new_booking')
         <!-- Main Container -->
@@ -301,28 +294,47 @@
         </div>
     @else
         <!-- OLD JOBS / REPAIR HISTORY TAB CONTENT -->
-        <div class="w-full bg-white border border-slate-300 rounded-sm shadow-2xs p-5 space-y-5">
+        <div class="w-full space-y-5">
             
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center pb-3 border-b border-slate-200 gap-4">
                 <div>
-                    <h2 class="text-xl font-bold text-slate-900 tracking-tight">Repair History</h2>
-                    <p class="text-xs text-slate-500 font-medium mt-0.5">List of past customer repair bookings</p>
+                    <h2 class="text-xl font-bold text-slate-900 tracking-tight">Repair Management</h2>
+                    <p class="text-xs text-slate-500 font-medium mt-0.5">List of customer repair bookings</p>
                 </div>
 
-                <div class="flex gap-3 w-full md:w-auto">
+                <div class="flex items-center gap-3 w-full md:w-auto">
+                    <!-- Status Filter Dropdown -->
+                    <select 
+                        wire:model.live="statusFilter"
+                        class="px-3 py-2 bg-white border border-slate-300 rounded-sm text-sm text-slate-800 focus:outline-none focus:ring-1 focus:ring-slate-900 font-sans cursor-pointer min-w-[150px]"
+                    >
+                        <option value="all">All Statuses</option>
+                        <option value="Received">Booked</option>
+                        <option value="Completed">Completed</option>
+                        <option value="In Progress">Processing</option>
+                    </select>
+
                     <input 
                         type="text" 
                         wire:model.live.debounce.150ms="searchQuery"
                         placeholder="Search by Ticket #, Name, Phone, or Device..." 
                         class="px-3.5 py-2 bg-white border border-slate-300 rounded-sm text-sm text-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900 w-full md:w-80 font-sans"
                     />
+                    <a 
+                        href="/repairs/create"
+                        wire:navigate
+                        class="px-4 py-2 bg-[#FFD700] hover:bg-[#E6C200] text-black font-bold text-sm rounded-sm transition shadow-2xs flex items-center gap-2 border border-yellow-500/40 whitespace-nowrap cursor-pointer"
+                    >
+                        <span class="font-extrabold text-base">+</span>
+                        <span>Book New Repair</span>
+                    </a>
                 </div>
             </div>
 
             <!-- Crisp Clean History Table -->
-            <div class="overflow-x-auto border border-slate-200 rounded-sm">
-                <table class="w-full text-left border-collapse text-sm">
-                    <thead class="bg-[#E2E8F0] border-b border-slate-300 text-slate-800 font-bold uppercase tracking-tight text-xs">
+            <div class="overflow-x-auto border border-slate-300 bg-white rounded-sm shadow-2xs">
+                <table class="w-full text-left border-collapse text-base">
+                    <thead class="bg-[#E2E8F0] border-b border-slate-300 text-slate-800 font-extrabold uppercase tracking-tight text-sm">
                         <tr>
                             <th class="py-2.5 px-3 border-r border-slate-300">Ticket #</th>
                             <th class="py-2.5 px-3 border-r border-slate-300">Date</th>
@@ -331,13 +343,11 @@
                             <th class="py-2.5 px-3 border-r border-slate-300">Device Model</th>
                             <th class="py-2.5 px-3 border-r border-slate-300">Problem Description</th>
                             <th class="py-2.5 px-3 text-center border-r border-slate-300">Status</th>
-                            <th class="py-2.5 px-3 text-right border-r border-slate-300">Quote</th>
-                            <th class="py-2.5 px-3 text-right border-r border-slate-300">Deposit</th>
                             <th class="py-2.5 px-3 text-right border-r border-slate-300">Balance</th>
                             <th class="py-2.5 px-3 text-center whitespace-nowrap">Action</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-slate-200 text-slate-800">
+                    <tbody class="divide-y divide-slate-200 text-slate-800 text-base">
                         @forelse($jobs as $job)
                             <tr class="hover:bg-slate-50 transition-colors">
                                 <td class="py-2.5 px-3 font-mono font-bold text-slate-900 border-r border-slate-200 whitespace-nowrap">
@@ -345,24 +355,22 @@
                                         <span>{{ $job->ticket_number }}</span>
                                     </a>
                                 </td>
-                                <td class="py-2.5 px-3 font-mono text-slate-600 text-xs border-r border-slate-200 whitespace-nowrap">{{ $job->created_at->format('d-m-Y H:i') }}</td>
+                                <td class="py-2.5 px-3 font-mono text-slate-600 border-r border-slate-200 whitespace-nowrap">{{ $job->created_at->format('d-m-Y H:i') }}</td>
                                 <td class="py-2.5 px-3 font-bold text-slate-900 border-r border-slate-200 whitespace-nowrap">{{ $job->customer_name }}</td>
-                                <td class="py-2.5 px-3 font-mono text-slate-600 text-xs border-r border-slate-200 whitespace-nowrap">{{ $job->phone_number }}</td>
+                                <td class="py-2.5 px-3 font-mono text-slate-600 border-r border-slate-200 whitespace-nowrap">{{ $job->phone_number }}</td>
                                 <td class="py-2.5 px-3 font-semibold text-[#0a77c0] border-r border-slate-200 whitespace-nowrap">{{ $job->device_model }}</td>
                                 <td class="py-2.5 px-3 text-slate-600 max-w-xs truncate border-r border-slate-200" title="{{ $job->problem_description }}">{{ $job->problem_description }}</td>
                                 <td class="py-2.5 px-3 text-center border-r border-slate-200 whitespace-nowrap">
                                     @if($job->status === 'Completed')
-                                        <span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-sm text-xs font-bold">Completed</span>
+                                        <span class="text-sm font-extrabold text-emerald-600">Completed</span>
                                     @elseif($job->status === 'In Progress')
-                                        <span class="px-2 py-0.5 bg-amber-100 text-amber-800 rounded-sm text-xs font-bold">In Progress</span>
+                                        <span class="text-sm font-extrabold text-amber-600">In Progress</span>
                                     @elseif($job->status === 'Received')
-                                        <span class="px-2 py-0.5 bg-blue-100 text-blue-800 rounded-sm text-xs font-bold">Received</span>
+                                        <span class="text-sm font-extrabold text-blue-600">Received</span>
                                     @else
-                                        <span class="px-2 py-0.5 bg-slate-100 text-slate-800 rounded-sm text-xs font-bold">{{ $job->status }}</span>
+                                        <span class="text-sm font-extrabold text-slate-600">{{ $job->status }}</span>
                                     @endif
                                 </td>
-                                <td class="py-2.5 px-3 text-right font-mono font-semibold border-r border-slate-200 whitespace-nowrap">€{{ number_format($job->total_quote, 2) }}</td>
-                                <td class="py-2.5 px-3 text-right font-mono text-slate-600 border-r border-slate-200 whitespace-nowrap">€{{ number_format($job->deposit_paid, 2) }}</td>
                                 <td class="py-2.5 px-3 text-right font-mono font-bold text-slate-900 border-r border-slate-200 whitespace-nowrap">
                                     €{{ number_format($job->remaining_balance, 2) }}
                                 </td>
@@ -370,7 +378,7 @@
                                     <a 
                                         href="/repairs/{{ $job->ticket_number }}" 
                                         wire:navigate 
-                                        class="px-3 py-1 bg-[#0a77c0] hover:bg-[#08629f] text-white rounded-sm text-xs font-bold shadow-2xs inline-block transition"
+                                        class="px-3 py-1.5 bg-[#0a77c0] hover:bg-[#08629f] text-white rounded-sm text-sm font-bold shadow-2xs inline-block transition"
                                     >
                                         View & Pay
                                     </a>
@@ -378,7 +386,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="10" class="py-8 text-center text-slate-400 font-mono text-sm">
+                                <td colspan="9" class="py-8 text-center text-slate-400 font-mono text-sm">
                                     No repair jobs found.
                                 </td>
                             </tr>

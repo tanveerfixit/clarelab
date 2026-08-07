@@ -98,19 +98,19 @@
                     <svg class="w-9 h-9 mb-1 text-[#dbeefb] fill-current" viewBox="0 0 24 24">
                         <path d="M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.4 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.4-2.4c.4-.4.4-1 0-1.3z"/>
                     </svg>
-                    <span class="text-sm font-sans leading-tight">Repairs</span>
+                    <span class="text-sm font-sans leading-tight">Repair<br/>Management</span>
                 </a>
 
                 <!-- Invoices -->
-                <a href="#" wire:navigate class="flex flex-col items-center justify-center py-4 px-2 text-[#cbd5e1] hover:bg-[#34495e] hover:text-white transition text-center group">
+                <a href="/invoices" wire:navigate class="flex flex-col items-center justify-center py-4 px-2 transition text-center group {{ request()->is('invoices*') ? 'bg-[#3b4e63] text-white font-bold' : 'hover:bg-[#34495e] text-[#cbd5e1]' }}">
                     <svg class="w-9 h-9 mb-1 text-[#dbeefb] fill-current" viewBox="0 0 24 24">
-                        <path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10z"/>
+                        <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>
                     </svg>
                     <span class="text-sm font-sans leading-tight">Invoices</span>
                 </a>
 
                 <!-- Customers -->
-                <a href="#" wire:navigate class="flex flex-col items-center justify-center py-4 px-2 text-[#cbd5e1] hover:bg-[#34495e] hover:text-white transition text-center group">
+                <a href="/customers" wire:navigate class="flex flex-col items-center justify-center py-4 px-2 transition text-center group {{ request()->is('customers*') ? 'bg-[#3b4e63] text-white font-bold' : 'hover:bg-[#34495e] text-[#cbd5e1]' }}">
                     <svg class="w-9 h-9 mb-1 text-[#dbeefb] fill-current" viewBox="0 0 24 24">
                         <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM9 10H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2zm-8 4H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2z"/>
                     </svg>

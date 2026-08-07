@@ -13,6 +13,9 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        // Run branch manager and branch structure seeding
+        $this->call(BranchSeeder::class);
+
         // Wipe tables for clean re-seed
         DB::table('branch_stocks')->delete();
         DB::table('products')->delete();
@@ -306,13 +309,7 @@ class DatabaseSeeder extends Seeder
             ]);
         }
 
-        // 4. Default Walk-in Customer
-        DB::table('customers')->insert([
-            'business_id' => $businessId,
-            'name' => 'Walk-in Customer',
-            'phone' => '0000000000',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        // 4. Run Customer & Samples Seeder
+        $this->call(CustomerSeeder::class);
     }
 }

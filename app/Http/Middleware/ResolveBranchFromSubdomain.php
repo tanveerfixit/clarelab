@@ -13,24 +13,23 @@ class ResolveBranchFromSubdomain
      */
     public function handle(Request $request, Closure $next)
     {
-        $host = $request->getHost(); // e.g. ipear.clarelab.com or localhost
-        $subdomain = explode('.', $host)[0]; // e.g. ipear, fixd, phonelab
-
-        // Try resolving branch by subdomain or slug
-        $branch = Branch::where('subdomain', $host)
-            ->orWhere('slug', $subdomain)
-            ->first();
-
-        if (!$branch) {
-            // Fallback to first branch or default main store
+        if (auth()->check()) {
+            $user = auth()->user();
+            if ($user->branch_id) {
+                session([
+                    'active_branch_id' => $user->branch_id,
+                    'active_branch' => $user->branch ?? Branch::find($user->branch_id),
+                ]);
+            }
+        } else {
+            // Fallback for guests (e.g. on login/landing page)
             $branch = Branch::first();
-        }
-
-        if ($branch) {
-            session([
-                'active_branch_id' => $branch->id,
-                'active_branch' => $branch,
-            ]);
+            if ($branch) {
+                session([
+                    'active_branch_id' => $branch->id,
+                    'active_branch' => $branch,
+                ]);
+            }
         }
 
         return $next($request);

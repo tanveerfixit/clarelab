@@ -123,12 +123,91 @@
                 <div class="flex flex-wrap items-center gap-4 py-1">
                     <span class="font-bold text-slate-900 text-base">Need/Have/OnPO :</span>
                     <a href="/products/{{ $product->id }}/edit" wire:navigate class="text-blue-600 hover:underline font-bold font-mono text-base">
-                        {{ $product->need_qty }}/{{ $product->stock_quantity }}/{{ $product->on_po_qty }}
+                        {{ $product->need_qty ?? 0 }}/{{ $product->currentBranchStock() }}/{{ $product->on_po_qty ?? 0 }}
                     </a>
-                    <button class="px-4 py-2 bg-[#FFD700] hover:bg-[#E6C200] text-black font-bold text-sm rounded-xs transition shadow-2xs cursor-pointer border border-yellow-500/40 ml-2">
+                    <button wire:click="toggleAddInventory" class="px-4 py-2 bg-[#FFD700] hover:bg-[#E6C200] text-black font-bold text-sm rounded-xs transition shadow-2xs cursor-pointer border border-yellow-500/40 ml-2">
                         Add Inventory
                     </button>
                 </div>
+
+                @if($showAddInventory)
+                    <div class="bg-white border border-slate-300 rounded-sm p-5 space-y-4 max-w-2xl my-3 shadow-2xs">
+                        <!-- Supplier Row -->
+                        <div>
+                            <label class="block text-sm font-bold text-slate-800 mb-1">Supplier Name<span class="text-red-500">*</span></label>
+                            @if($showNewSupplierForm)
+                                <div class="bg-slate-50 border border-slate-300 p-3 rounded-sm space-y-3 mb-2">
+                                    <div class="text-xs font-bold text-slate-700 uppercase">Create New Supplier</div>
+                                    <div class="space-y-2">
+                                        <input type="text" wire:model="new_supplier_name" placeholder="Supplier Name*" class="w-full text-sm p-2 border border-slate-300 rounded-sm bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                        @error('new_supplier_name') <span class="text-xs text-red-600 font-bold block mt-1">{{ $message }}</span> @enderror
+                                        
+                                        <input type="email" wire:model="new_supplier_email" placeholder="Email" class="w-full text-sm p-2 border border-slate-300 rounded-sm bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                        <input type="text" wire:model="new_supplier_phone" placeholder="Phone" class="w-full text-sm p-2 border border-slate-300 rounded-sm bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                    </div>
+                                    <div class="flex gap-2">
+                                        <button type="button" wire:click="saveNewSupplier" class="px-3 py-1.5 bg-[#10B981] hover:bg-[#059669] text-white font-bold text-xs rounded-sm transition cursor-pointer">Save Supplier</button>
+                                        <button type="button" wire:click="toggleNewSupplier" class="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-xs rounded-sm transition cursor-pointer">Cancel</button>
+                                    </div>
+                                </div>
+                            @else
+                                <div class="flex gap-2">
+                                    <select wire:model="supplier_id" class="flex-1 text-sm p-2 border border-slate-300 rounded-sm focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white">
+                                        <option value="">Select Supplier</option>
+                                        @foreach($this->suppliers as $supplier)
+                                            <option value="{{ $supplier->id }}">{{ $supplier->name }}</option>
+                                        @endforeach
+                                    </select>
+                                    <button type="button" wire:click="toggleNewSupplier" class="px-3 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-sm rounded-sm border border-slate-300 transition cursor-pointer">
+                                        + New
+                                    </button>
+                                </div>
+                            @endif
+                        </div>
+
+                        <!-- Cost Input -->
+                        <div>
+                            <label class="block text-sm font-bold text-slate-800 mb-1">Cost<span class="text-red-500">*</span></label>
+                            <input type="number" step="0.01" wire:model.live="cost" class="w-full text-sm p-2 border border-slate-300 rounded-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
+                            @error('cost') <span class="text-xs text-red-600 font-bold block mt-1">{{ $message }}</span> @enderror
+                        </div>
+
+                        <!-- Quantity Row -->
+                        <div>
+                            <label class="block text-sm font-bold text-slate-800 mb-1">QTY<span class="text-red-500">*</span></label>
+                            <input type="number" wire:model.live="qty" {{ ($product->has_serial || $product->type === 'serialized') ? 'disabled' : '' }} class="w-full text-sm p-2 border border-slate-300 rounded-sm bg-slate-100 disabled:text-slate-500 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                            @error('qty') <span class="text-xs text-red-600 font-bold block mt-1">{{ $message }}</span> @enderror
+                        </div>
+
+                        <div class="text-right text-sm font-bold text-slate-900 font-mono">
+                            Total : €{{ number_format((float)$cost * $qty, 2) }}
+                        </div>
+
+                        <!-- Serial Numbers Textarea -->
+                        @if($product->has_serial || $product->type === 'serialized')
+                            <div>
+                                <label class="block text-sm font-bold text-slate-800 mb-1">Serial Numbers<span class="text-red-500">*</span></label>
+                                <textarea wire:model.live="serial_numbers" rows="3" placeholder="One Serial number per line" class="w-full text-sm p-2 border border-slate-300 rounded-sm focus:outline-none focus:ring-1 focus:ring-blue-500 font-mono"></textarea>
+                                @error('serial_numbers') <span class="text-xs text-red-600 font-bold block mt-1">{{ $message }}</span> @enderror
+                            </div>
+                        @endif
+
+                        <!-- Print Barcode -->
+                        <div class="flex items-center gap-3">
+                            <span class="text-sm font-bold text-slate-800">Print Barcode</span>
+                            <label class="inline-flex items-center gap-1.5 cursor-pointer text-sm">
+                                <input type="checkbox" wire:model="print_barcode" class="rounded border-slate-300 text-blue-600 focus:ring-blue-500">
+                                <span class="font-semibold text-slate-700">Yes</span>
+                            </label>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="flex justify-end gap-2 pt-2">
+                            <button type="button" wire:click="toggleAddInventory" class="px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 font-bold text-sm rounded-sm border border-slate-300 transition cursor-pointer">Cancel</button>
+                            <button type="button" wire:click="addInventory" class="px-4 py-2 bg-[#10B981] hover:bg-[#059669] text-white font-bold text-sm rounded-sm transition cursor-pointer">Add</button>
+                        </div>
+                    </div>
+                @endif
 
                 <!-- Minimum Stock -->
                 <div class="flex items-center gap-3 py-0.5">
@@ -176,6 +255,31 @@
                     </div>
                 @endif
             </div>
+
+            <!-- Serial Numbers (IMEIs) List for Serialized Products -->
+            @if($product->has_serial || $product->type === 'serialized')
+                @php
+                    $branchSerials = $product->serials()
+                        ->where('branch_id', session('active_branch_id', 1))
+                        ->where('status', 'available')
+                        ->get();
+                @endphp
+                <div class="mt-4 pt-4 border-t border-slate-200">
+                    <span class="font-bold text-slate-900 text-base block mb-2">In-Stock Serial Numbers (IMEIs) at this Branch:</span>
+                    @if($branchSerials->isEmpty())
+                        <span class="text-slate-500 text-sm italic">No serial numbers currently in stock for this branch.</span>
+                    @else
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
+                            @foreach($branchSerials as $serial)
+                                <div class="bg-slate-50 border border-slate-200 rounded-sm px-3 py-1.5 text-sm font-mono text-slate-800 flex items-center justify-between">
+                                    <span>{{ $serial->serial_number }}</span>
+                                    <span class="inline-block w-2 h-2 rounded-full bg-emerald-500" title="Available"></span>
+                                </div>
+                            @endforeach
+                        </div>
+                    @endif
+                </div>
+            @endif
 
             <!-- Bottom Action Buttons: Blue Edit & Red Archive (Touch-Friendly Sizes) -->
             <div class="pt-6 border-t border-slate-200 flex items-center gap-3">

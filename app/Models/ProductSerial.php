@@ -18,6 +18,7 @@ class ProductSerial extends Model
         'status',
         'branch_id',
         'transaction_id',
+        'supplier_id',
     ];
 
     protected $casts = [
@@ -25,11 +26,17 @@ class ProductSerial extends Model
         'product_variant_id' => 'integer',
         'branch_id' => 'integer',
         'transaction_id' => 'integer',
+        'supplier_id' => 'integer',
     ];
 
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
+    }
+
+    public function supplier(): BelongsTo
+    {
+        return $this->belongsTo(Supplier::class);
     }
 
     public function variant(): BelongsTo

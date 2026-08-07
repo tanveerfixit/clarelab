@@ -15,20 +15,22 @@ class CheckoutService
     /**
      * Executes transaction checkout, creating invoice records and decrementing stock atomically.
      */
-    public function processCheckout(int $businessId, int $branchId, array $cart, float $discount, string $paymentMethod): array
+    public function processCheckout(int $businessId, int $branchId, array $cart, float $discount, string $paymentMethod, ?int $customerId = null, ?int $userId = null): array
     {
-        return DB::transaction(function () use ($businessId, $branchId, $cart, $discount, $paymentMethod) {
+        return DB::transaction(function () use ($businessId, $branchId, $cart, $discount, $paymentMethod, $customerId, $userId) {
             $subtotal = 0.00;
 
             foreach ($cart as $item) {
                 $subtotal += ($item['price'] * $item['quantity']);
                 
-                // Decrement inventory using atomic locking service
-                $this->inventoryService->decrementStock(
-                    branchId: $branchId,
-                    productId: $item['id'],
-                    quantity: $item['quantity']
-                );
+                // Only decrement inventory if product_id is numeric (real catalog item)
+                if (is_numeric($item['id'])) {
+                    $this->inventoryService->decrementStock(
+                        branchId: $branchId,
+                        productId: (int)$item['id'],
+                        quantity: $item['quantity']
+                    );
+                }
             }
 
             $taxAmount = 0.00; // Tax calculation hook
@@ -38,6 +40,8 @@ class CheckoutService
             $invoiceId = DB::table('invoices')->insertGetId([
                 'business_id' => $businessId,
                 'branch_id' => $branchId,
+                'customer_id' => $customerId,
+                'user_id' => $userId,
                 'invoice_number' => $invoiceNumber,
                 'subtotal' => $subtotal,
                 'discount' => $discount,
@@ -53,7 +57,7 @@ class CheckoutService
                 $itemTotal = $item['price'] * $item['quantity'];
                 DB::table('invoice_items')->insert([
                     'invoice_id' => $invoiceId,
-                    'product_id' => $item['id'],
+                    'product_id' => is_numeric($item['id']) ? (int)$item['id'] : null,
                     'product_name' => $item['name'],
                     'unit_price' => $item['price'],
                     'quantity' => $item['quantity'],

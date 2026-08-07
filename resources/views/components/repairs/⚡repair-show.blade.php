@@ -30,7 +30,7 @@
             </a>
             <div>
                 <div class="flex items-center gap-2">
-                    <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Repair Ticket #{{ $ticket->ticket_number }}</h1>
+                    <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Ticket #{{ $ticket->ticket_number }}</h1>
                     <span class="px-2.5 py-0.5 rounded-sm text-xs font-bold uppercase tracking-wider
                         @if($ticket->status === 'Completed') bg-emerald-100 text-emerald-800 border border-emerald-300
                         @elseif($ticket->status === 'In Progress') bg-amber-100 text-amber-800 border border-amber-300
@@ -41,7 +41,6 @@
                         {{ $ticket->status }}
                     </span>
                 </div>
-                <p class="text-xs text-slate-500 font-medium mt-0.5">Created on {{ $ticket->created_at->format('d M Y \a\t H:i') }} &bull; {{ $ticket->device_model }}</p>
             </div>
         </div>
 

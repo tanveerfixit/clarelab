@@ -29,10 +29,11 @@ class RepairBooking extends Component
     public string $session_id = '';
 
     // Navigation Tab State ('new_booking' or 'old_jobs')
-    public string $activeTab = 'new_booking';
+    public string $activeTab = 'old_jobs';
 
     // Search Query for Repair History
     public string $searchQuery = '';
+    public string $statusFilter = 'all';
 
     public function setTab(string $tab)
     {
@@ -41,6 +42,9 @@ class RepairBooking extends Component
 
     public function mount()
     {
+        if (request()->is('repairs/create')) {
+            $this->activeTab = 'new_booking';
+        }
         $this->generateSessionId();
         $this->seedInitialTicketsIfEmpty();
     }
@@ -90,12 +94,11 @@ class RepairBooking extends Component
         $actionText = $andPrint ? "saved to database & sent to thermal printer" : "saved to database";
         $this->dispatch('show-toast', message: "Repair Ticket #{$ticket->ticket_number} for {$ticket->customer_name} {$actionText} successfully!");
 
-        // Switch to history tab to show the newly saved repair job immediately
-        $this->activeTab = 'old_jobs';
-
         // Reset form after saving
         $this->reset(['customer_name', 'phone_number', 'email_address', 'device_model', 'problem_description', 'part_needed', 'total_quote', 'deposit_paid']);
         $this->generateSessionId();
+
+        return redirect()->to('/repairs');
     }
 
     private function seedInitialTicketsIfEmpty()
@@ -159,6 +162,10 @@ class RepairBooking extends Component
         $branchId = BranchContext::current()?->id ?: 1;
 
         $query = RepairTicket::where('branch_id', $branchId);
+
+        if ($this->statusFilter !== 'all') {
+            $query->where('status', $this->statusFilter);
+        }
 
         if (!empty(trim($this->searchQuery))) {
             $term = '%' . trim($this->searchQuery) . '%';

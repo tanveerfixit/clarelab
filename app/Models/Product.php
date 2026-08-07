@@ -39,11 +39,13 @@ class Product extends Model
         'description',
         'alert_message',
         'is_active',
+        'supplier_id',
     ];
 
     protected $casts = [
         'business_id' => 'integer',
         'category_id' => 'integer',
+        'supplier_id' => 'integer',
         'manage_stock' => 'boolean',
         'is_active' => 'boolean',
         'stock_quantity' => 'integer',
@@ -69,6 +71,11 @@ class Product extends Model
         });
     }
 
+    public function supplier(): BelongsTo
+    {
+        return $this->belongsTo(Supplier::class);
+    }
+
     public function variants(): HasMany
     {
         return $this->hasMany(ProductVariant::class);
@@ -82,5 +89,15 @@ class Product extends Model
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
+    }
+
+    public function currentBranchStock(): int
+    {
+        $branchId = session('active_branch_id', 1);
+        $stock = \Illuminate\Support\Facades\DB::table('branch_stocks')
+            ->where('product_id', $this->id)
+            ->where('branch_id', $branchId)
+            ->first();
+        return $stock ? (int)$stock->quantity : 0;
     }
 }

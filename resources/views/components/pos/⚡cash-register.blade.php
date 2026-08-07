@@ -248,7 +248,7 @@
                         <svg class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                         <span>CUSTOMER</span>
                     </div>
-                    <button class="text-[#0a77c0] hover:underline cursor-pointer text-xs font-extrabold">+ NEW</button>
+                    <button wire:click="openCustomerCreateModal" class="text-[#0a77c0] hover:underline cursor-pointer text-xs font-extrabold">+ NEW</button>
                 </div>
 
                 <div class="relative">
@@ -259,9 +259,39 @@
                         type="text" 
                         wire:model.live.debounce.150ms="customerSearch" 
                         placeholder="Search phone or name..." 
-                        class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-300 rounded-sm text-sm text-slate-900 focus:outline-none focus:ring-1 focus:ring-[#0a77c0] placeholder:text-slate-400 font-sans"
+                        class="w-full pl-9 pr-8 py-2 bg-slate-50 border border-slate-300 rounded-sm text-sm text-slate-900 focus:outline-none focus:ring-1 focus:ring-[#0a77c0] placeholder:text-slate-400 font-sans"
+                        @if($selectedCustomerId) disabled @endif
                     />
                     <svg class="w-4 h-4 absolute left-3 top-2.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+
+                    @if($selectedCustomerId)
+                        <button 
+                            type="button"
+                            wire:click="clearSelectedCustomer" 
+                            class="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600 font-bold cursor-pointer text-sm"
+                        >
+                            ✕
+                        </button>
+                    @endif
+
+                    <!-- Autocomplete dropdown -->
+                    @if(!empty($this->customerSearchResults))
+                        <div class="absolute left-0 right-0 z-50 mt-1 bg-white border border-slate-350 rounded-sm shadow-lg max-h-60 overflow-y-auto divide-y divide-slate-100 font-sans">
+                            @foreach($this->customerSearchResults as $cust)
+                                <button 
+                                    type="button"
+                                    wire:click="selectCustomer({{ $cust['id'] }})"
+                                    class="w-full text-left px-3.5 py-2.5 hover:bg-slate-50 text-sm text-slate-800 transition flex flex-col cursor-pointer"
+                                >
+                                    <span class="font-extrabold text-slate-900">{{ $cust['name'] }}</span>
+                                    <span class="text-xs text-slate-500 font-semibold mt-0.5">
+                                        @if($cust['phone']) 📞 {{ $cust['phone'] }} @endif
+                                        @if($cust['email']) • ✉️ {{ $cust['email'] }} @endif
+                                    </span>
+                                </button>
+                            @endforeach
+                        </div>
+                    @endif
                 </div>
             </div>
 
@@ -489,4 +519,69 @@
 
     <!-- Edit Cart Item Modal Component -->
     <livewire:pos.cart-item-modal wire:key="cash-register-cart-item-modal-v1" />
+
+    <!-- Create Customer Modal -->
+    @if($showCustomerCreateModal)
+        <div class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+            <div class="bg-white border border-slate-300 rounded-xs shadow-xl w-full max-w-md overflow-hidden">
+                <!-- Modal Header -->
+                <div class="bg-[#E2E8F0] border-b border-slate-300 px-4 py-3 flex items-center justify-between">
+                    <h3 class="font-bold text-slate-800 text-base">Create New Customer</h3>
+                    <button wire:click="$set('showCustomerCreateModal', false)" class="text-slate-400 hover:text-slate-600 font-bold text-lg cursor-pointer">✕</button>
+                </div>
+
+                <!-- Modal Body -->
+                <form wire:submit.prevent="createCustomer" class="p-4 space-y-3.5 text-sm">
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">Name <span class="text-red-500">*</span></label>
+                        <input type="text" wire:model="name" class="w-full px-3 py-2 border border-slate-300 rounded-xs focus:outline-none focus:border-slate-500" placeholder="e.g. paul tighe" />
+                        @error('name') <span class="text-red-500 text-xs font-semibold">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">Phone Number <span class="text-red-500">*</span></label>
+                        <input type="text" wire:model="phone" class="w-full px-3 py-2 border border-slate-300 rounded-xs focus:outline-none focus:border-slate-500" placeholder="e.g. 0872504432" />
+                        @error('phone') <span class="text-red-500 text-xs font-semibold">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">Email</label>
+                        <input type="email" wire:model="email" class="w-full px-3 py-2 border border-slate-300 rounded-xs focus:outline-none focus:border-slate-500" placeholder="e.g. paul.tighe@gmail.com" />
+                        @error('email') <span class="text-red-500 text-xs font-semibold">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block font-bold text-slate-700 mb-1">Company</label>
+                            <input type="text" wire:model="company" class="w-full px-3 py-2 border border-slate-300 rounded-xs focus:outline-none focus:border-slate-500" placeholder="e.g. Collins Repairs" />
+                            @error('company') <span class="text-red-500 text-xs font-semibold">{{ $message }}</span> @enderror
+                        </div>
+
+                        <div>
+                            <label class="block font-bold text-slate-700 mb-1">Landline</label>
+                            <input type="text" wire:model="landline" class="w-full px-3 py-2 border border-slate-300 rounded-xs focus:outline-none focus:border-slate-500" placeholder="e.g. 0656822234" />
+                            @error('landline') <span class="text-red-500 text-xs font-semibold">{{ $message }}</span> @enderror
+                        </div>
+                    </div>
+
+                    <!-- Modal Actions -->
+                    <div class="pt-3 border-t border-slate-200 flex items-center justify-end gap-2">
+                        <button 
+                            type="button" 
+                            wire:click="$set('showCustomerCreateModal', false)" 
+                            class="px-4 py-2 border border-slate-300 hover:bg-slate-50 text-slate-700 font-semibold rounded-xs cursor-pointer"
+                        >
+                            Cancel
+                        </button>
+                        <button 
+                            type="submit" 
+                            class="px-4 py-2 bg-[#FFD700] hover:bg-[#E6C200] text-black font-bold rounded-xs cursor-pointer border border-yellow-500/40"
+                        >
+                            Save Customer
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    @endif
 </div>

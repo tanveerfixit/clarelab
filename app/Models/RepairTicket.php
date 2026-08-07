@@ -12,6 +12,7 @@ class RepairTicket extends Model
     use HasFactory;
 
     protected $fillable = [
+        'customer_id',
         'business_id',
         'branch_id',
         'ticket_number',
@@ -25,6 +26,11 @@ class RepairTicket extends Model
         'deposit_paid',
         'status',
     ];
+
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(Customer::class, 'customer_id');
+    }
 
     protected $casts = [
         'total_quote' => 'float',

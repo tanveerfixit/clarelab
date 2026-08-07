@@ -45,6 +45,65 @@ class CashRegister extends Component
     public bool $showReceiptModal = false;
     public ?array $receiptData = null;
 
+    // Create Customer Modal state
+    public bool $showCustomerCreateModal = false;
+    public string $name = '';
+    public string $company = '';
+    public string $email = '';
+    public string $phone = '';
+    public string $landline = '';
+
+    protected $rules = [
+        'name' => 'required|string|max:255',
+        'phone' => 'required|string|max:20',
+        'email' => 'nullable|email|max:255',
+        'company' => 'nullable|string|max:255',
+        'landline' => 'nullable|string|max:20',
+    ];
+
+    public function openCustomerCreateModal()
+    {
+        $this->resetCustomerForm();
+        $this->showCustomerCreateModal = true;
+    }
+
+    public function resetCustomerForm()
+    {
+        $this->name = '';
+        $this->company = '';
+        $this->email = '';
+        $this->phone = '';
+        $this->landline = '';
+    }
+
+    public function createCustomer()
+    {
+        $this->validate();
+
+        $baseSlug = \Illuminate\Support\Str::slug($this->name);
+        $slug = $baseSlug ?: 'customer';
+        
+        $count = \App\Models\Customer::where('slug', 'like', $slug . '%')->count();
+        if ($count > 0) {
+            $slug .= '-' . ($count + 1);
+        }
+
+        $customer = \App\Models\Customer::create([
+            'business_id' => 1,
+            'name' => $this->name,
+            'slug' => $slug,
+            'company' => $this->company,
+            'email' => $this->email,
+            'phone' => $this->phone,
+            'landline' => $this->landline,
+        ]);
+
+        $this->selectedCustomerId = $customer->id;
+        $this->customerSearch = "{$customer->name} ({$customer->phone})";
+        $this->showCustomerCreateModal = false;
+        $this->dispatch('show-toast', message: 'Customer created and selected successfully!');
+    }
+
     protected $listeners = [
         'saleFinalized' => 'handleSaleFinalized',
         'cartItemUpdated' => 'handleCartItemUpdated',
@@ -197,6 +256,51 @@ class CashRegister extends Component
     public function getSearchResultsProperty(): array
     {
         return $this->searchResults;
+    }
+
+    #[Computed]
+    public function customerSearchResults(): array
+    {
+        $query = trim($this->customerSearch);
+        
+        if ($this->selectedCustomerId) {
+            $selected = \App\Models\Customer::find($this->selectedCustomerId);
+            if ($selected && $this->customerSearch === "{$selected->name}" . ($selected->phone ? " ({$selected->phone})" : "")) {
+                return [];
+            }
+        }
+
+        if (strlen($query) < 1) {
+            return [];
+        }
+
+        return \App\Models\Customer::where('name', 'like', "%{$query}%")
+            ->orWhere('phone', 'like', "%{$query}%")
+            ->orWhere('company', 'like', "%{$query}%")
+            ->orWhere('email', 'like', "%{$query}%")
+            ->limit(5)
+            ->get()
+            ->toArray();
+    }
+
+    public function getCustomerSearchResultsProperty(): array
+    {
+        return $this->customerSearchResults;
+    }
+
+    public function selectCustomer(int $id)
+    {
+        $customer = \App\Models\Customer::find($id);
+        if ($customer) {
+            $this->selectedCustomerId = $customer->id;
+            $this->customerSearch = "{$customer->name}" . ($customer->phone ? " ({$customer->phone})" : "");
+        }
+    }
+
+    public function clearSelectedCustomer()
+    {
+        $this->selectedCustomerId = null;
+        $this->customerSearch = '';
     }
 
     public function selectProduct(int $productId)
@@ -495,7 +599,8 @@ class CashRegister extends Component
             taxClass: $this->taxClass,
             paymentMethod: $methodLabel,
             appliedPayments: $this->sidebarAppliedPayments,
-            changeDue: $this->changeDue
+            changeDue: $this->changeDue,
+            customerId: $this->selectedCustomerId
         );
     }
 

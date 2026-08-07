@@ -27,20 +27,27 @@ Route::middleware([
     PreventAccessFromCentralDomains::class,
     ResolveBranchFromSubdomain::class,
 ])->group(function () {
-    Route::get('/', HomeDashboard::class);
-    Route::get('/login', \App\Livewire\Auth\Login::class)->name('login');
-    Route::any('/logout', function () {
-        \Illuminate\Support\Facades\Auth::logout();
-        session()->invalidate();
-        session()->regenerateToken();
-        return redirect('/login');
-    })->name('logout');
-    Route::get('/register', CashRegister::class);
-    Route::get('/repairs', RepairBooking::class);
-    Route::get('/repairs/{ticket}', \App\Livewire\Repairs\RepairShow::class)->name('repairs.show');
-    Route::get('/products', ProductIndex::class);
-    Route::get('/products/create', ProductFormView::class);
-    Route::get('/products/{product}', ProductShow::class);
-    Route::get('/products/{product}/edit', ProductFormView::class);
-    Route::get('/getting-started', GettingStarted::class);
+    // Guest Routes
+    Route::middleware('guest')->group(function () {
+        Route::get('/login', \App\Livewire\Auth\Login::class)->name('login');
+    });
+
+    // Authenticated Routes
+    Route::middleware('auth')->group(function () {
+        Route::get('/', HomeDashboard::class);
+        Route::any('/logout', function () {
+            \Illuminate\Support\Facades\Auth::logout();
+            session()->invalidate();
+            session()->regenerateToken();
+            return redirect('/');
+        })->name('logout');
+        Route::get('/register', CashRegister::class);
+        Route::get('/repairs', RepairBooking::class);
+        Route::get('/repairs/{ticket}', \App\Livewire\Repairs\RepairShow::class)->name('repairs.show');
+        Route::get('/products', ProductIndex::class);
+        Route::get('/products/create', ProductFormView::class);
+        Route::get('/products/{product}', ProductShow::class);
+        Route::get('/products/{product}/edit', ProductFormView::class);
+        Route::get('/getting-started', GettingStarted::class);
+    });
 });

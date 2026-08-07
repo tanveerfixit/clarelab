@@ -9,6 +9,6 @@ class HomeDashboard extends Component
     public function render()
     {
         return view('components.⚡home-dashboard')
-            ->layout('components.layouts.app', ['header' => 'Dashboard']);
+            ->layout('components.layouts.app', ['title' => 'Central Login / Branch Dashboard', 'header' => 'Dashboard']);
     }
 }

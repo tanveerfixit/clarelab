@@ -17,22 +17,28 @@ class InvoiceNumberGenerator
             $targetBranch = $branch ?? BranchContext::current();
 
             if (!$targetBranch) {
-                $prefix = 'INV';
-                $nextNum = rand(1000, 9999);
+                $prefix = 'ph';
+                $nextNum = rand(1, 999);
             } else {
                 // Lock branch row for safe update
                 $b = Branch::where('id', $targetBranch->id)->lockForUpdate()->first();
-                $prefix = strtoupper($b->invoice_prefix ?: 'INV');
+                
+                // Get branch name or fallback
+                $branchName = $b->name ?: 'Phone Lab';
+                
+                // Remove spaces and get first two letters, lowercased
+                $cleanName = str_replace(' ', '', $branchName);
+                $prefix = strtolower(substr($cleanName, 0, 2));
+                
                 $nextNum = $b->invoice_next_number ?: 1;
 
                 // Increment counter
                 $b->increment('invoice_next_number');
             }
 
-            $year = date('Y');
-            $paddedSeq = str_pad((string)$nextNum, 4, '0', STR_PAD_LEFT);
+            $paddedSeq = str_pad((string)$nextNum, 3, '0', STR_PAD_LEFT);
 
-            return "{$prefix}-{$year}-{$paddedSeq}";
+            return "{$prefix}{$paddedSeq}";
         });
     }
 }

@@ -401,3 +401,4 @@ When generating code for this repository, ALWAYS:
 8. **Domain Exceptions**: Throw typed domain exceptions (e.g. `InsufficientStockException`) rather than returning boolean `false`.
 9. **Computed Properties**: Implement Livewire computed properties (`#[Computed]`) for total, tax, discount calculations, and filtered inventory search.
 10. **SQLite Comments**: Provide clear comments when SQLite behavior diverges from MySQL.
+11. **SEO-Friendly URLs**: Keep routes, URLs, and model routing parameters clean, intuitive, and SEO-friendly.
